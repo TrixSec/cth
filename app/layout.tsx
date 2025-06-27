@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
+ import { Toaster } from "@/components/ui/toaster"
 import { Header } from "@/components/header"
-import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -50,7 +50,7 @@ export default function RootLayout({
               <div className="flex min-h-screen w-full">
                 <AppSidebar />
                 <div className="flex-1 flex flex-col">
-                  <Header />
+                   <Header />
                   <main className="flex-1">{children}</main>
                 </div>
               </div>

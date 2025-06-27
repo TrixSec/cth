@@ -52,6 +52,7 @@ const SidebarProvider = React.forwardRef<
   React.ComponentProps<"div"> & {
     defaultOpen?: boolean
     open?: boolean
+    collapsible?: "offcanvas" | "drawer";
     onOpenChange?: (open: boolean) => void
   }
 >(

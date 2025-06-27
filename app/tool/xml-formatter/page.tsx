@@ -1,13 +1,12 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Code } from "lucide-react"
 
 export default function XMLFormatterPage() {
   return (
     <div className="min-h-screen">
-      <Header />
+       
       <div className="container px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2">XML Formatter</h1>

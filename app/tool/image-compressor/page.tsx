@@ -3,8 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Header } from "@/components/header"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
@@ -54,7 +53,7 @@ export default function ImageCompressorPage() {
 
   return (
     <div className="min-h-screen">
-      <Header />
+       
       <div className="container px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2">Image Compressor</h1>
