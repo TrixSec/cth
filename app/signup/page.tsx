@@ -1,17 +1,30 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff, Mail, Lock, User, Loader2, ArrowLeft } from "lucide-react"
+import {
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react"
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -23,7 +36,8 @@ export default function SignUpPage() {
     confirmPassword: "",
     fullName: "",
   })
-  const { signUp } = useAuth()
+
+  const { signUp, signInWithGoogle } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
 
@@ -58,6 +72,7 @@ export default function SignUpPage() {
       const { error } = await signUp(formData.email, formData.password, {
         full_name: formData.fullName,
       })
+
       if (error) {
         toast({
           title: "Error",
@@ -75,6 +90,21 @@ export default function SignUpPage() {
       toast({
         title: "Error",
         description: "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in with Google",
         variant: "destructive",
       })
     } finally {
@@ -101,10 +131,32 @@ export default function SignUpPage() {
                 CTH
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
-            <CardDescription>Create your Cipher Tools Hub account</CardDescription>
+            <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+            <CardDescription>Join Cipher Tools Hub today</CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Sign Up With Google */}
+            <div className="mb-6">
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+                onClick={handleGoogleSignUp}
+                disabled={isLoading}
+              >
+                <Mail className="h-4 w-4" />
+                {isLoading ? "Signing up..." : "Sign up with Google"}
+              </Button>
+            </div>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or create an account</span>
+              </div>
+            </div>
+
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
@@ -113,7 +165,7 @@ export default function SignUpPage() {
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="John Doe"
                     value={formData.fullName}
                     onChange={(e) => handleInputChange("fullName", e.target.value)}
                     className="pl-10 border-2 focus:border-primary"

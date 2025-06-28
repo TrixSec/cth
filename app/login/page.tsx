@@ -1,17 +1,22 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, LogIn } from "lucide-react"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -20,7 +25,7 @@ export default function LoginPage() {
     email: "",
     password: "",
   })
-  const { signIn } = useAuth()
+  const { signIn, signInWithGoogle } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
 
@@ -58,6 +63,21 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in with Google",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
       <div className="w-full max-w-md">
@@ -81,6 +101,28 @@ export default function LoginPage() {
             <CardDescription>Welcome back to Cipher Tools Hub</CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Sign In With Google */}
+            <div className="mb-6">
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+              >
+                <Mail className="h-4 w-4" />
+                {isLoading ? "Signing in..." : "Sign in with Google"}
+              </Button>
+            </div>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
