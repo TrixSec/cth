@@ -12,44 +12,43 @@ export const supabase = isSupabaseEnabled ? createClient(supabaseUrl!, supabaseA
 // Server-side client for API routes
 export const createServerClient = () => {
   if (!isSupabaseEnabled) return null
-
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
 
-// Export a flag to check if Supabase is properly configured
+export type ProfileRow = {
+  id: string
+  email: string
+  full_name: string | null
+  avatar_url: string | null
+  created_at: string
+  updated_at: string
+  subscription_starts: string | null
+  subscription_ends: string | null
+  trial_starts: string | null
+  trial_ends: string | null
+  user_type: "free" | "free_trial" | "premium"
+  plan: "free" | "monthly" | "yearly" | "addon"
+  max_credits: number
+  credits_used: number
+  last_reset_date: string
+  shortener_qrs_generated: number
+  shortener_urls_generated: number
+  shortener_aliases_used: number
+  md5_hash_decrypted: number
+  times_multiple_hashes_decrypted: number
+}
 
 export type Database = {
   public: {
     Tables: {
       profiles: {
-        Row: {
+        Row: ProfileRow
+        Insert: Partial<ProfileRow> & {
           id: string
           email: string
-          full_name: string | null
-          plan: "free" | "monthly" | "yearly" | "addon"
-          credits: number
-          max_credits: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          email: string
-          full_name?: string | null
-          plan?: "free" | "monthly" | "yearly" | "addon"
-          credits?: number
-          max_credits?: number
           created_at?: string
-          updated_at?: string
         }
-        Update: {
-          id?: string
-          email?: string
-          full_name?: string | null
-          plan?: "free" | "monthly" | "yearly" | "addon"
-          credits?: number
-          max_credits?: number
-          created_at?: string
+        Update: Partial<ProfileRow> & {
           updated_at?: string
         }
       }

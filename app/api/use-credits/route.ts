@@ -4,40 +4,45 @@ import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
-    const { toolName, creditsToUse = 1 } = await request.json()
+    const { toolName, isPremium = false } = await request.json()
+    const creditsToUse = isPremium ? 5 : 1
+
     const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
-    // Get the current user
+    // Get current user
     const {
       data: { user },
-      error: userError,
+      error: authError,
     } = await supabase.auth.getUser()
 
-    if (userError || !user) {
+    if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get user's current credits
+    // Fetch profile with max_credits and credits_used
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("credits")
+      .select("id, max_credits, credits_used")
       .eq("id", user.id)
       .single()
 
     if (profileError) {
-      return NextResponse.json({ error: "Failed to get user profile" }, { status: 500 })
+      return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 })
     }
 
-    // Check if user has enough credits
-    if (profile.credits < creditsToUse) {
+    const creditsLeft = profile.max_credits - profile.credits_used
+
+    // Check if enough credits
+    if (creditsLeft < creditsToUse) {
       return NextResponse.json({ error: "Insufficient credits" }, { status: 400 })
     }
 
-    // Deduct credits
+    // Deduct credits by updating credits_used
+    const newCreditsUsed = profile.credits_used + creditsToUse
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ credits: profile.credits - creditsToUse })
+      .update({ credits_used: newCreditsUsed })
       .eq("id", user.id)
 
     if (updateError) {
@@ -52,12 +57,13 @@ export async function POST(request: Request) {
     })
 
     if (logError) {
-      console.error("Failed to log usage:", logError)
+      console.error("Usage logging failed:", logError)
     }
 
     return NextResponse.json({
       success: true,
-      remainingCredits: profile.credits - creditsToUse,
+      remainingCredits: profile.max_credits - newCreditsUsed,
+      usedCredits: newCreditsUsed,
     })
   } catch (error) {
     console.error("Error using credits:", error)

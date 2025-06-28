@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -77,7 +76,9 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
     }
 
     try {
-      await signUp(formData.email, formData.password, formData.fullName)
+      await signUp(formData.email, formData.password, {
+        full_name: formData.fullName
+      })
       onOpenChange(false)
       setFormData({ email: "", password: "", confirmPassword: "", fullName: "" })
     } catch (error: any) {

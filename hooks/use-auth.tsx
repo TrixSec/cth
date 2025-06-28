@@ -2,14 +2,14 @@
 
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import type { User } from "@supabase/supabase-js"
+import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js"
 import { supabase, isSupabaseEnabled } from "@/lib/supabase"
 
 interface AuthContextType {
   user: User | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, metadata?: { [key: string]: any }) => Promise<{ error: any }>
   signOut: () => Promise<void>
   signInWithGoogle: () => Promise<{ error: any }>
 }
@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
@@ -50,11 +50,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return await supabase.auth.signInWithPassword({ email, password })
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, metadata?: { [key: string]: any }) => {
     if (!isSupabaseEnabled) {
       return { error: { message: "Authentication not configured" } }
     }
-    return await supabase.auth.signUp({ email, password })
+    return await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata
+      }
+    })
   }
 
   const signOut = async () => {

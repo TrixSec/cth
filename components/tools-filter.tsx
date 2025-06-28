@@ -1,68 +1,64 @@
+// components/tools-filter.tsx
 "use client"
 
-import { useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Filter, X } from "lucide-react"
-import { categories, tools } from "@/lib/tools-data"
+import { categories, Tool } from "@/lib/tools-data"
 import { getIcon } from "@/lib/icon-map"
 
 interface ToolsFilterProps {
-  onFilterChange: (filters: {
-    search: string
-    category: string
-    isPremium: boolean | null
-  }) => void
-  totalCount: number
+  tools: Tool[]
+  onFilter: Dispatch<SetStateAction<Tool[]>>
 }
 
-export function ToolsFilter({ onFilterChange, totalCount }: ToolsFilterProps) {
+export function ToolsFilter({ tools: allTools, onFilter }: ToolsFilterProps) {
   const [search, setSearch] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
   const [premiumFilter, setPremiumFilter] = useState<boolean | null>(null)
 
+  // Apply filters whenever they change
+  useEffect(() => {
+    const filtered = allTools.filter((tool) => {
+      const matchesSearch = tool.name.toLowerCase().includes(search.toLowerCase()) ||
+                          tool.description.toLowerCase().includes(search.toLowerCase())
+      const matchesCategory = !selectedCategory || tool.category === selectedCategory
+      const matchesPremium = premiumFilter === null || tool.isPremium === premiumFilter
+      
+      return matchesSearch && matchesCategory && matchesPremium
+    })
+    
+    onFilter(filtered)
+  }, [search, selectedCategory, premiumFilter, allTools, onFilter])
+
   const handleSearchChange = (value: string) => {
     setSearch(value)
-    onFilterChange({
-      search: value,
-      category: selectedCategory,
-      isPremium: premiumFilter,
-    })
   }
 
   const handleCategoryChange = (categoryId: string) => {
-    const newCategory = selectedCategory === categoryId ? "" : categoryId
-    setSelectedCategory(newCategory)
-    onFilterChange({
-      search,
-      category: newCategory,
-      isPremium: premiumFilter,
-    })
+    setSelectedCategory(prev => prev === categoryId ? "" : categoryId)
   }
 
   const handlePremiumFilter = (isPremium: boolean | null) => {
     setPremiumFilter(isPremium)
-    onFilterChange({
-      search,
-      category: selectedCategory,
-      isPremium,
-    })
   }
 
   const clearFilters = () => {
     setSearch("")
     setSelectedCategory("")
     setPremiumFilter(null)
-    onFilterChange({
-      search: "",
-      category: "",
-      isPremium: null,
-    })
   }
 
   const hasActiveFilters = search || selectedCategory || premiumFilter !== null
+
+  // Count tools in each category from the original list
+  const categoryCounts = categories.map(category => ({
+    ...category,
+    count: allTools.filter(tool => tool.category === category.id).length
+  }))
 
   return (
     <Card className="mb-8">
@@ -84,7 +80,7 @@ export function ToolsFilter({ onFilterChange, totalCount }: ToolsFilterProps) {
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
               <span className="font-medium">Filters</span>
-              <Badge variant="secondary">{totalCount} tools</Badge>
+              <Badge variant="secondary">{allTools.length} tools</Badge>
             </div>
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -126,9 +122,8 @@ export function ToolsFilter({ onFilterChange, totalCount }: ToolsFilterProps) {
           <div className="space-y-3">
             <span className="text-sm font-medium">Categories</span>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-              {categories.map((category) => {
+              {categoryCounts.map((category) => {
                 const Icon = getIcon(category.iconName)
-                const toolCount = tools.filter((tool) => tool.category === category.id).length
                 const isSelected = selectedCategory === category.id
 
                 return (
@@ -144,7 +139,7 @@ export function ToolsFilter({ onFilterChange, totalCount }: ToolsFilterProps) {
                       <span className="text-xs font-medium truncate">{category.name}</span>
                     </div>
                     <Badge variant={isSelected ? "secondary" : "outline"} className="text-xs">
-                      {toolCount}
+                      {category.count}
                     </Badge>
                   </Button>
                 )

@@ -97,7 +97,11 @@ export function HeroSection() {
         </div>
       </section>
 
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab="signup" />
+      <AuthModal 
+        open={showAuthModal} 
+        onOpenChange={setShowAuthModal} 
+        defaultTab="signup" 
+      />
     </>
   )
 }
