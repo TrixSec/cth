@@ -1,7 +1,7 @@
 "use client"
 import { useAuth } from "@/hooks/use-auth"
 import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabase"
+import { supabase } from "@/lib/supabaseserver/server"
 import { Badge } from "@/components/ui/badge"
 import { CalendarIcon, ClockIcon, UserIcon } from "lucide-react"
 

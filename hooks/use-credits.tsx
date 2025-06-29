@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { toast } from "@/hooks/use-toast"
-import { supabase } from "@/lib/supabase"
+import { supabase } from "@/lib/supabaseserver/server"
 
 interface ProfileData {
   id: string
