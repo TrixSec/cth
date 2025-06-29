@@ -3,7 +3,13 @@
 import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -18,7 +24,11 @@ interface AuthModalProps {
   defaultTab?: "signin" | "signup"
 }
 
-export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthModalProps) {
+export function AuthModal({
+  open,
+  onOpenChange,
+  defaultTab = "signin",
+}: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(defaultTab)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -48,11 +58,12 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
     setError("")
 
     try {
-      await signIn(formData.email, formData.password)
+      const { error } = await signIn(formData.email, formData.password)
+      if (error) throw error
       onOpenChange(false)
       setFormData({ email: "", password: "", confirmPassword: "", fullName: "" })
-    } catch (error: any) {
-      setError(error.message || "Failed to sign in")
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in")
     } finally {
       setLoading(false)
     }
@@ -76,13 +87,14 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
     }
 
     try {
-      await signUp(formData.email, formData.password, {
-        full_name: formData.fullName
+      const { error } = await signUp(formData.email, formData.password, {
+        full_name: formData.fullName,
       })
+      if (error) throw error
       onOpenChange(false)
       setFormData({ email: "", password: "", confirmPassword: "", fullName: "" })
-    } catch (error: any) {
-      setError(error.message || "Failed to sign up")
+    } catch (err: any) {
+      setError(err.message || "Failed to sign up")
     } finally {
       setLoading(false)
     }
@@ -93,10 +105,13 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
     setError("")
 
     try {
-      await signInWithGoogle()
+      console.log("Starting Google OAuth...")
+      const { error } = await signInWithGoogle()
+      if (error) throw error
       onOpenChange(false)
-    } catch (error: any) {
-      setError(error.message || "Failed to sign in with Google")
+    } catch (err: any) {
+      console.error("Google Auth Error:", err)
+      setError(err.message || "Failed to sign in with Google")
     } finally {
       setLoading(false)
     }
@@ -106,7 +121,9 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">Welcome to Cipher Tools Hub</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-center">
+            Welcome to Cipher Tools Hub
+          </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
             Access powerful security and productivity tools
           </DialogDescription>
@@ -122,6 +139,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
+          {/* Sign In Tab */}
           <TabsContent value="signin" className="space-y-4 mt-6">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
@@ -155,7 +173,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
@@ -164,7 +182,11 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
                 </div>
               </div>
 
-              {error && <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">{error}</div>}
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
+                  {error}
+                </div>
+              )}
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
@@ -178,6 +200,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
             </div>
           </TabsContent>
 
+          {/* Sign Up Tab */}
           <TabsContent value="signup" className="space-y-4 mt-6">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
@@ -225,7 +248,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
@@ -251,7 +274,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={loading}
                   >
@@ -260,7 +283,11 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
                 </div>
               </div>
 
-              {error && <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">{error}</div>}
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
+                  {error}
+                </div>
+              )}
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Creating account..." : "Create Account"}
@@ -285,11 +312,18 @@ export function AuthModal({ open, onOpenChange, defaultTab = "signin" }: AuthMod
             <Separator className="w-full" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
           </div>
         </div>
 
-        <Button variant="outline" onClick={handleGoogleSignIn} disabled={loading} className="w-full bg-transparent">
+        <Button
+          variant="outline"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="w-full bg-transparent"
+        >
           <Mail className="mr-2 h-4 w-4" />
           Google
         </Button>

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, LogIn } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -25,6 +25,7 @@ export default function LoginPage() {
     email: "",
     password: "",
   })
+
   const { signIn, signInWithGoogle } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
@@ -66,11 +67,17 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      await signInWithGoogle()
+      console.log("Attempting Google sign-in...")
+      const { error } = await signInWithGoogle()
+      if (error) {
+        throw error
+      }
+      // No manual redirect needed; Supabase handles it
     } catch (error: any) {
+      console.error("Google Sign-In Error:", error)
       toast({
-        title: "Error",
-        description: error.message || "Failed to sign in with Google",
+        title: "Google Sign-In Failed",
+        description: error.message || "Unable to sign in with Google",
         variant: "destructive",
       })
     } finally {

@@ -100,11 +100,16 @@ export default function SignUpPage() {
   const handleGoogleSignUp = async () => {
     setIsLoading(true)
     try {
-      await signInWithGoogle()
+      console.log("Initiating Google OAuth from SignUpPage...")
+      const { error } = await signInWithGoogle()
+      if (error) {
+        throw error
+      }
     } catch (error: any) {
+      console.error("Google Sign-Up Error:", error)
       toast({
-        title: "Error",
-        description: error.message || "Failed to sign in with Google",
+        title: "Google Sign-Up Failed",
+        description: error.message || "Unable to sign up with Google",
         variant: "destructive",
       })
     } finally {
@@ -135,7 +140,7 @@ export default function SignUpPage() {
             <CardDescription>Join Cipher Tools Hub today</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Sign Up With Google */}
+            {/* Google OAuth Signup */}
             <div className="mb-6">
               <Button
                 variant="outline"
