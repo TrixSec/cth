@@ -1,17 +1,12 @@
 import { createClient } from "@supabase/supabase-js"
 
-// Use placeholder values if environment variables are not set
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Only create a real client if both environment variables are properly set
-export const isSupabaseEnabled = !!(supabaseUrl && supabaseAnonKey)
-
-export const supabase = isSupabaseEnabled ? createClient(supabaseUrl!, supabaseAnonKey!) : (null as any)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Server-side client for API routes
 export const createServerClient = () => {
-  if (!isSupabaseEnabled) return null
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
 
