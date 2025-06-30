@@ -8,32 +8,40 @@ interface ProfileData {
   id: string
   max_credits: number
   credits_used: number
+  user_type: "free" | "free_trial" | "premium"
 }
 
 export function useCredits() {
   const { user } = useAuth()
   const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async () => {
     if (!user) return
 
+    setLoading(true)
+
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, max_credits, credits_used")
+      .select("id, max_credits, credits_used, user_type")
       .eq("id", user.id)
       .single()
 
     if (error) {
       console.error("Failed to fetch profile:", error)
+      setLoading(false)
       return
     }
 
     setProfile(data)
+    setLoading(false)
   }, [user])
 
   useEffect(() => {
-    fetchProfile()
-  }, [fetchProfile])
+    if (user) {
+      fetchProfile()
+    }
+  }, [user, fetchProfile])
 
   const useCredits = async (toolName: string, isPremium: boolean): Promise<boolean> => {
     if (!profile) {
@@ -74,7 +82,7 @@ export function useCredits() {
       return false
     }
 
-    // Update local state optimistically
+    // Optimistically update local state
     setProfile((prev) =>
       prev
         ? {
@@ -99,5 +107,7 @@ export function useCredits() {
     creditsRemaining: profile ? profile.max_credits - profile.credits_used : 50,
     hasCredits: (profile ? profile.max_credits - profile.credits_used : 50) > 0,
     refreshCredits: fetchProfile,
+    loading,
+    userType: profile?.user_type ?? "free",
   }
 }

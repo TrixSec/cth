@@ -1,14 +1,22 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { Copy, RefreshCw, Shield } from "lucide-react"
+import { useCredits } from "@/hooks/use-credits"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function PasswordGenerator() {
   const [password, setPassword] = useState("")
@@ -20,7 +28,28 @@ export default function PasswordGenerator() {
   const [excludeSimilar, setExcludeSimilar] = useState(false)
   const { toast } = useToast()
 
-  const generatePassword = () => {
+  const { user } = useAuth()
+  const { useCredits: deductCredits, loading } = useCredits()
+
+  // Treat guest and free the same
+  const isGuest = !user
+  const userType = user?.user_metadata?.user_type || "guest"
+  const isPremiumUser = userType === "premium" || userType === "free_trial"
+
+  const toolName = "Password Generator"
+  const isPremiumTool = false // Set to true if this feature costs more for free/guest
+
+  const generatePassword = async () => {
+    if (!isPremiumUser && isGuest) {
+      // Guest or free user
+      const success = await deductCredits(toolName, isPremiumTool)
+      if (!success) return
+    } else if (!isPremiumUser) {
+      // Signed in but not premium or trial
+      const success = await deductCredits(toolName, isPremiumTool)
+      if (!success) return
+    }
+
     let charset = ""
 
     if (includeUppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -54,16 +83,9 @@ export default function PasswordGenerator() {
 
     try {
       await navigator.clipboard.writeText(password)
-      toast({
-        title: "Copied!",
-        description: "Password copied to clipboard",
-      })
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to copy password",
-        variant: "destructive",
-      })
+      toast({ title: "Copied!", description: "Password copied to clipboard" })
+    } catch {
+      toast({ title: "Failed", description: "Could not copy password", variant: "destructive" })
     }
   }
 
@@ -116,36 +138,61 @@ export default function PasswordGenerator() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center space-x-2">
-                <Checkbox id="uppercase" checked={includeUppercase} onCheckedChange={setIncludeUppercase} />
+                <Checkbox id="uppercase" checked={includeUppercase} onCheckedChange={(checked) => setIncludeUppercase(!!checked)} />
                 <Label htmlFor="uppercase">Uppercase (A-Z)</Label>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox id="lowercase" checked={includeLowercase} onCheckedChange={setIncludeLowercase} />
+                <Checkbox id="lowercase" checked={includeLowercase} onCheckedChange={(checked) => setIncludeLowercase(!!checked)} />
                 <Label htmlFor="lowercase">Lowercase (a-z)</Label>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox id="numbers" checked={includeNumbers} onCheckedChange={setIncludeNumbers} />
+                <Checkbox id="numbers" checked={includeNumbers} onCheckedChange={(checked) => setIncludeNumbers(!!checked)} />
                 <Label htmlFor="numbers">Numbers (0-9)</Label>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox id="symbols" checked={includeSymbols} onCheckedChange={setIncludeSymbols} />
+                <Checkbox id="symbols" checked={includeSymbols} onCheckedChange={(checked) => setIncludeSymbols(!!checked)} />
                 <Label htmlFor="symbols">Symbols (!@#$)</Label>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox id="exclude-similar" checked={excludeSimilar} onCheckedChange={setExcludeSimilar} />
+              <Checkbox id="exclude-similar" checked={excludeSimilar} onCheckedChange={(checked) => setExcludeSimilar(!!checked)} />
               <Label htmlFor="exclude-similar">Exclude similar characters (i, l, 1, L, o, 0, O)</Label>
             </div>
           </div>
 
-          <Button onClick={generatePassword} className="w-full">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Generate Password
+          <Button
+            onClick={generatePassword}
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Generate Password
+              </>
+            )}
           </Button>
+
+          {!isPremiumUser && !isGuest && (
+            <p className="text-center text-sm text-muted-foreground">
+              You're out of credits! Upgrade to premium for unlimited usage.
+            </p>
+          )}
+
+          {!isPremiumUser && isGuest && (
+            <p className="text-center text-sm text-muted-foreground">
+              Guests have limited credits. Sign up to unlock more!
+            </p>
+          )}
         </CardContent>
       </Card>
 

@@ -1,4 +1,4 @@
-import type React from "react"
+import type React from "react";
 import {
   Key,
   Hash,
@@ -8,7 +8,8 @@ import {
   Type,
   Shield,
   Mail,
-  ImageIcon,
+  Image as ImageIcon, // Assuming ImageIcon is meant to be the Image icon
+  Image, // Import the Image icon
   Palette,
   Video,
   Music,
@@ -49,8 +50,8 @@ import {
   FileImage,
   FilePlus,
   Scissors,
-} from "lucide-react"
-import type { IconName } from "./tools-data"
+} from "lucide-react";
+import type { IconName } from "./tools-data";
 
 export const iconMap: Record<IconName, React.ComponentType<any>> = {
   Key,
@@ -62,6 +63,7 @@ export const iconMap: Record<IconName, React.ComponentType<any>> = {
   Shield,
   Mail,
   ImageIcon,
+  Image, // Add the Image icon to the iconMap
   Palette,
   Video,
   Music,
@@ -96,14 +98,14 @@ export const iconMap: Record<IconName, React.ComponentType<any>> = {
   FileSpreadsheet,
   Crop,
   Droplets,
-  FileImage,
-  FilePlus,
-  Scissors,
   Compress,
   FileType2,
   FileText2,
-}
+  FileImage,
+  FilePlus,
+  Scissors,
+};
 
 export function getIcon(iconName: IconName): React.ComponentType<any> {
-  return iconMap[iconName] || Code
+  return iconMap[iconName] || Code;
 }
